@@ -5,17 +5,23 @@ import { v4 as uuidv4 } from "uuid";
 
 import { format } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 
-type AuthorProps = {
+interface AuthorProps {
+  name: string;
+  role: string;
+  avatarUrl: string;
+}
+
+interface ContentProps {
   type: string;
   content: string;
-};
+}
 
 interface PostProps {
-  author: any;
-  content: any;
-  publishedAt: any;
+  author: AuthorProps;
+  content: Array<ContentProps>;
+  publishedAt: Date;
 }
 
 export function Post({ author, content, publishedAt }: PostProps) {
@@ -26,6 +32,7 @@ export function Post({ author, content, publishedAt }: PostProps) {
     },
   ]);
   const [newComment, setNewComment] = useState("");
+  const isNewCommentDisabled = !newComment || !newComment.trim();
 
   const publisehdDateFormatted = format(
     publishedAt,
@@ -35,7 +42,7 @@ export function Post({ author, content, publishedAt }: PostProps) {
     }
   );
 
-  function handleCreateNewComment() {
+  function handleCreateNewComment(event: FormEvent) {
     event?.preventDefault();
 
     const createNewComment = {
@@ -43,15 +50,13 @@ export function Post({ author, content, publishedAt }: PostProps) {
       comment: newComment,
     };
 
-    if (!newComment) return;
+    if (!newComment || !newComment.trim()) return;
     const newComments = createNewComment;
     setComments([...comments, newComments]);
     setNewComment("");
   }
 
-  function handleDeleteComment(id: any) {
-    event?.preventDefault();
-
+  function handleDeleteComment(id: string) {
     const deleteComments = comments.filter((comments) => comments.id !== id);
 
     setComments(deleteComments);
@@ -73,7 +78,7 @@ export function Post({ author, content, publishedAt }: PostProps) {
       </header>
 
       <div className={styles.content}>
-        {content.map((line: any) => {
+        {content.map((line) => {
           if (line.type === "paragraph") {
             return <p key={line.content}>{line.content}</p>;
           } else {
@@ -90,13 +95,17 @@ export function Post({ author, content, publishedAt }: PostProps) {
         <strong>Deixe seu feedback</strong>
 
         <textarea
+          name="comment"
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Deixe um comentário"
           value={newComment}
+          required
         ></textarea>
 
         <footer>
-          <button type="submit">Publicar</button>
+          <button type="submit" disabled={isNewCommentDisabled}>
+            Publicar
+          </button>
         </footer>
       </form>
 
